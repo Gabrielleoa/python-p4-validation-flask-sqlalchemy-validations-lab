@@ -7,14 +7,24 @@ class Author(db.Model):
     
     id = db.Column(db.Integer, primary_key=True)
     name= db.Column(db.String, unique=True, nullable=False)
-    phone_number = db.Column(db.String)
+    phone_number = db.Column(db.String(10), unique= True)
     created_at = db.Column(db.DateTime, server_default=db.func.now())
     updated_at = db.Column(db.DateTime, onupdate=db.func.now())
 
-    # Add validators 
-
+    @validates('name')
+    def validate_name(self, key, name):
+        if not name:
+            raise ValueError("Failed name validation")
+        return name
+    @validates('phone_number')
+    def validate_number(self, key, phone_number):
+        if phone_number and len(phone_number) != 10:
+            raise ValueError("Phone number must be 10 digits")
+        return phone_number
+        
     def __repr__(self):
         return f'Author(id={self.id}, name={self.name})'
+    
 
 class Post(db.Model):
     __tablename__ = 'posts'
@@ -28,6 +38,28 @@ class Post(db.Model):
     updated_at = db.Column(db.DateTime, onupdate=db.func.now())
 
     # Add validators  
+    @validates('content')
+    def validate_content(self, key,content):
+        if len(content )< 250:
+            raise ValueError("Failed Validation")
+        return content
+   
+    @validates('summary')
+    def validate_summary(self, key, summary):
+        if summary and len(summary) > 250:
+            raise ValueError("Failed Validation")
+        return summary
+    @validates('category')
+    def validates_category(self, key, category):
+        if category not in ['Fiction', 'Non-Fiction']:
+            raise ValueError('Failed validation')
+        return category 
+    @validates('title')
+    def validates_title(self, key, title):
+        titles = ["Won't Believe", "Secret","Top","Guess"]
+        if not any(phrase in title for phrase in titles):
+            raise ValueError('Validation Error')
+        return title
 
 
     def __repr__(self):
